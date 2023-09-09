@@ -1,7 +1,12 @@
-import re
 import numpy as np
+import sqlite3
+import re
+import matplotlib.pyplot as plt
+from scipy.signal import savgol_filter, medfilt, convolve, gaussian
+from scipy.ndimage import gaussian_filter1d
 
-def load_trial_data(trial_id):
+
+def load_trial_data(trial_id, db_path):
     """
     Load x and y coordinates as a numpy time series for a given trial_id.
 
@@ -12,35 +17,40 @@ def load_trial_data(trial_id):
     - numpy array: Time series data of x and y coordinates.
     """
 
-    # Check if trial_id is a string
-    if not isinstance(trial_id, str):
-        raise ValueError("Input trial_id should be a string.")
-    
-    # Check if trial_id is in the format x_n
-    if not re.match(r"^\d_[1-4]$", trial_id):
-        raise ValueError("Input trial_id should be in the format x_n where x is an integer and n is a number from 1 to 4.")
-    
-    # Fetch data from the database for the given trial_id
-    cursor_original.execute("SELECT x, y FROM tracking_raw_controls WHERE trial_id=?", (trial_id,))
-    data = cursor_original.fetchall()
-    
-    # Check if data was retrieved
-    if not data:
-        raise ValueError(f"trial_id {trial_id} not found in the database.")
-    
-    # Convert data to numpy array
-    time_series_data = np.array(data)
-    
-    # Log the successful loading
-    log_message = f"trial {trial_id} successfully loaded with {len(data)} rows"
-    
-    return time_series_data, log_message
+    try:
+        # Establish a connection to the database
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
 
-import matplotlib.pyplot as plt
-from scipy.signal import savgol_filter, medfilt, convolve, gaussian
-from scipy.ndimage import gaussian_filter1d
-import numpy as np
+        # Fetch data from the database for the given trial_id
+        all_data_query = "SELECT trial_id, time, x, y FROM pointing_rawdata WHERE trial_id = ?;"
+        all_data = cursor.execute(all_data_query, (trial_id,)).fetchall()
 
+        # Close the connection
+        cursor.close()
+        conn.close()
+
+        # 3. Calculate % missing frames
+        missing_frames = [row for row in all_data if row[2] in ("-", None) or row[3] in ("-", None)]
+        n_missing = len(missing_frames)
+        n_data = len(all_data)
+        percent_missing = (len(missing_frames) / len(all_data)) * 100
+    
+        # Check if data was retrieved
+        if n_data > 0:
+            # 4. Filter out missing frames and return x, y as numpy array
+            valid_data = [row for row in all_data if row not in missing_frames]
+            numpy_data = np.array(valid_data, dtype=float)[:, 1:]  # Exclude trial_id from the numpy array
+            return(numpy_data)
+
+        else:
+            print(f"No data found for trial_id: {trial_id}")
+            return None
+
+    except sqlite3.Error as e:
+        print("SQLite Error:", e)
+        return None
+    
 # Helper functions for smoothing methods
 
 def moving_average(data, window_size):
@@ -117,6 +127,6 @@ def smooth_data(raw_data, method, **kwargs):
     plt.ylabel("Position")
     plt.legend()
     
-    log_message = f"Data smoothed using {method} method."
+    print(f"Data smoothed using {method} method.")
     
-    return SmoothedData(smoothed_data, log_message)
+    return SmoothedData(smoothed_data)
