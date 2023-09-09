@@ -27,8 +27,10 @@ class MovingAverage(SmoothingMethod):
         return smoothed_x, smoothed_y
 
     def adjust_time(self):
-        adjusted_length = len(self.x) - self.window_size + 1
-        return self.time[-adjusted_length:]
+        removed_elements = self.window_size - 1
+        start_index = removed_elements // 2
+        end_index = -removed_elements // 2
+        return self.time[start_index:end_index]
 
 
 class WeightedMovingAverage(SmoothingMethod):
@@ -43,8 +45,11 @@ class WeightedMovingAverage(SmoothingMethod):
         return smoothed_x, smoothed_y
 
     def adjust_time(self):
-        adjusted_length = len(self.x) - self.window_size + 1
-        return self.time[-adjusted_length:]
+        removed_elements = self.window_size - 1
+        start_index = removed_elements // 2
+        end_index = -removed_elements // 2
+        return self.time[start_index:end_index]
+
 
 
 class ExponentialMovingAverage(SmoothingMethod):
@@ -73,8 +78,11 @@ class GaussianSmoothing(SmoothingMethod):
         return smoothed_x, smoothed_y
 
     def adjust_time(self):
-        adjusted_length = len(self.x) - self.window_size + 1
-        return self.time[-adjusted_length:]
+        removed_elements = self.window_size - 1
+        start_index = removed_elements // 2
+        end_index = -removed_elements // 2
+        return self.time[start_index:end_index]
+
 
 
 class SavitzkyGolay(SmoothingMethod):

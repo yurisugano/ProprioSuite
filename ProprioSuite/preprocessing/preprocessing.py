@@ -68,13 +68,17 @@ def smooth_data(raw_data, method_class, **kwargs):
     method_instance = method_class(raw_data, **kwargs)
     smoothed_x, smoothed_y = method_instance.smooth()
     adjusted_time = method_instance.adjust_time()
+    
+    raw_time, raw_x, raw_y = raw_data[:,0], raw_data[:,1], raw_data[:,2]
 
     smoothed_data = np.column_stack((adjusted_time, smoothed_x, smoothed_y))
 
     # ... [Plotting code]
     plt.figure(figsize=(10, 6))
-    plt.plot(adjusted_time, smoothed_x, 'r-', label="Smoothed X")
-    plt.plot(adjusted_time, smoothed_y, 'b-', label="Smoothed Y")
+    plt.plot(adjusted_time, smoothed_x, 'r--', label="Smoothed X")
+    plt.plot(adjusted_time, smoothed_y, 'b--', label="Smoothed Y")
+    plt.plot(raw_time, raw_x, 'r-', label="Raw X")
+    plt.plot(raw_time, raw_y, 'b-', label="Raw Y")
     plt.title("Smoothed Data")
     plt.xlabel("Time")
     plt.ylabel("Position")
