@@ -53,80 +53,137 @@ def load_trial_data(trial_id, db_path):
         print("SQLite Error:", e)
         return None
     
-# Helper functions for smoothing methods
+class SmoothingMethod:
+    def __init__(self, data):
+        self.time = data[:, 0]
+        self.x = data[:, 1]
+        self.y = data[:, 2]
 
-def moving_average(data, window_size):
-    kernel = np.ones(window_size) / window_size
-    return convolve(data, kernel, mode='valid')
+    def smooth(self):
+        raise NotImplementedError("Each smoothing method should implement this method.")
 
-def weighted_moving_average(data, window_size):
-    weights = np.arange(1, window_size + 1)
-    return convolve(data, weights/weights.sum(), mode='valid')
+    def adjust_time(self):
+        raise NotImplementedError("Each smoothing method should adjust the time accordingly.")
 
-def exponential_moving_average(data, alpha=0.3):
-    return pd.Series(data).ewm(alpha=alpha).mean().values
 
-def gaussian_smoothing(data, window_size):
-    window = gaussian(window_size, window_size/3)
-    return convolve(data, window/window.sum(), mode='valid')
+class MovingAverage(SmoothingMethod):
+    def __init__(self, data, window_size):
+        super().__init__(data)
+        self.window_size = window_size
 
-def savitzky_golay(data, window_size, polynomial_order=2):
-    return savgol_filter(data, window_size, polynomial_order)
+    def smooth(self):
+        kernel = np.ones(self.window_size) / self.window_size
+        smoothed_x = convolve(self.x, kernel, mode='valid')
+        smoothed_y = convolve(self.y, kernel, mode='valid')
+        return smoothed_x, smoothed_y
 
-def median_filter(data, window_size):
-    return medfilt(data, window_size)
+    def adjust_time(self):
+        adjusted_length = len(self.x) - self.window_size + 1
+        return self.time[-adjusted_length:]
+
+
+class WeightedMovingAverage(SmoothingMethod):
+    def __init__(self, data, window_size):
+        super().__init__(data)
+        self.window_size = window_size
+
+    def smooth(self):
+        weights = np.arange(1, self.window_size + 1)
+        smoothed_x = convolve(self.x, weights / weights.sum(), mode='valid')
+        smoothed_y = convolve(self.y, weights / weights.sum(), mode='valid')
+        return smoothed_x, smoothed_y
+
+    def adjust_time(self):
+        adjusted_length = len(self.x) - self.window_size + 1
+        return self.time[-adjusted_length:]
+
+
+class ExponentialMovingAverage(SmoothingMethod):
+    def __init__(self, data, alpha=0.3):
+        super().__init__(data)
+        self.alpha = alpha
+
+    def smooth(self):
+        smoothed_x = pd.Series(self.x).ewm(alpha=self.alpha).mean().values
+        smoothed_y = pd.Series(self.y).ewm(alpha=self.alpha).mean().values
+        return smoothed_x, smoothed_y
+
+    def adjust_time(self):
+        return self.time
+
+
+class GaussianSmoothing(SmoothingMethod):
+    def __init__(self, data, window_size):
+        super().__init__(data)
+        self.window_size = window_size
+
+    def smooth(self):
+        window = gaussian(self.window_size, self.window_size / 3)
+        smoothed_x = convolve(self.x, window / window.sum(), mode='valid')
+        smoothed_y = convolve(self.y, window / window.sum(), mode='valid')
+        return smoothed_x, smoothed_y
+
+    def adjust_time(self):
+        adjusted_length = len(self.x) - self.window_size + 1
+        return self.time[-adjusted_length:]
+
+
+class SavitzkyGolay(SmoothingMethod):
+    def __init__(self, data, window_size, polynomial_order=2):
+        super().__init__(data)
+        self.window_size = window_size
+        self.polynomial_order = polynomial_order
+
+    def smooth(self):
+        smoothed_x = savgol_filter(self.x, self.window_size, self.polynomial_order)
+        smoothed_y = savgol_filter(self.y, self.window_size, self.polynomial_order)
+        return smoothed_x, smoothed_y
+
+    def adjust_time(self):
+        return self.time
+
+
+class MedianFilter(SmoothingMethod):
+    def __init__(self, data, window_size):
+        super().__init__(data)
+        self.window_size = window_size
+
+    def smooth(self):
+        smoothed_x = medfilt(self.x, self.window_size)
+        smoothed_y = medfilt(self.y, self.window_size)
+        return smoothed_x, smoothed_y
+
+    def adjust_time(self):
+        return self.time
+
 
 class SmoothedData:
     def __init__(self, data):
         self.data = data
-    
+
     def get_data(self):
         return self.data
-    
+
     def show_plot(self):
         plt.show()
-    
 
-def smooth_data(raw_data, method, **kwargs):
-    # Split the raw data into x and y coordinates
-    x, y = raw_data[:, 1], raw_data[:, 2]
-    
-    # Map method names to functions
-    methods = {
-        "moving_average": moving_average,
-        "weighted_moving_average": weighted_moving_average,
-        "exponential_moving_average": exponential_moving_average,
-        "gaussian_smoothing": gaussian_smoothing,
-        "savitzky_golay": savitzky_golay,
-        "median_filter": median_filter
-    }
-    
-    # Check if the method exists
-    if method not in methods:
-        raise ValueError(f"Method {method} not recognized.")
-    
-    # Apply the selected method to smooth the data
-    smoothed_x = methods[method](x, **kwargs)
-    smoothed_y = methods[method](y, **kwargs)
-    
-    # Combine smoothed x and y into a numpy array
-    smoothed_data = np.column_stack((smoothed_x, smoothed_y))
-    
-    # Plotting the raw and smoothed data
-    time = np.arange(len(x))
+
+def smooth_data(raw_data, method_class, **kwargs):
+    method_instance = method_class(raw_data, **kwargs)
+    smoothed_x, smoothed_y = method_instance.smooth()
+    adjusted_time = method_instance.adjust_time()
+
+    smoothed_data = np.column_stack((adjusted_time, smoothed_x, smoothed_y))
+
+    # ... [Plotting code]
     plt.figure(figsize=(10, 6))
-    plt.plot(time, x, 'r--', label="Raw X")
-    plt.plot(time, y, 'b--', label="Raw Y")
-    plt.plot(time[len(time) - len(smoothed_x):], smoothed_x, 'r-', label="Smoothed X")
-    plt.plot(time[len(time) - len(smoothed_y):], smoothed_y, 'b-', label="Smoothed Y")
-    
-    plt.title("Raw vs Smoothed Data")
+    plt.plot(adjusted_time, smoothed_x, 'r-', label="Smoothed X")
+    plt.plot(adjusted_time, smoothed_y, 'b-', label="Smoothed Y")
+    plt.title("Smoothed Data")
     plt.xlabel("Time")
     plt.ylabel("Position")
     plt.legend()
-    
-    print(f"Data smoothed using {method} method.")
-    
+
     return SmoothedData(smoothed_data)
 
 def xy_summaries(data):
@@ -183,4 +240,8 @@ def xy_summaries(data):
         "pct_4q": q4 * 100,
     }
     
-    return summaries
+    return round_values(summaries)
+
+def round_values(d):
+    """Rounds all values in a dictionary to 2 decimal places."""
+    return {k: round(v, 2) for k, v in d.items()}
