@@ -1,3 +1,9 @@
+# For importing the function to be tested
+from ProprioSuite import *
+
+# Other necessary imports
+import pytest  # If you're using pytest as your testing framework
+
 def test_load_trial_data():
     # Test with valid trial_id
     data, log = load_trial_data("1_1")

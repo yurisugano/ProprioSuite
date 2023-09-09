@@ -110,4 +110,13 @@ def smooth_data(raw_data, method, **kwargs):
     plt.plot(time, x, 'r--', label="Raw X")
     plt.plot(time, y, 'b--', label="Raw Y")
     plt.plot(time[len(time) - len(smoothed_x):], smoothed_x, 'r-', label="Smoothed X")
-    plt.plot(time[len(time) - len(smoothed
+    plt.plot(time[len(time) - len(smoothed_y):], smoothed_y, 'b-', label="Smoothed Y")
+    
+    plt.title("Raw vs Smoothed Data")
+    plt.xlabel("Time")
+    plt.ylabel("Position")
+    plt.legend()
+    
+    log_message = f"Data smoothed using {method} method."
+    
+    return SmoothedData(smoothed_data, log_message)
