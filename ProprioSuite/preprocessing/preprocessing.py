@@ -36,5 +36,78 @@ def load_trial_data(trial_id):
     
     return time_series_data, log_message
 
-# Test the function with trial_id = "1_1"
-load_trial_data("1_1")
+import matplotlib.pyplot as plt
+from scipy.signal import savgol_filter, medfilt, convolve, gaussian
+from scipy.ndimage import gaussian_filter1d
+import numpy as np
+
+# Helper functions for smoothing methods
+
+def moving_average(data, window_size):
+    kernel = np.ones(window_size) / window_size
+    return convolve(data, kernel, mode='valid')
+
+def weighted_moving_average(data, window_size):
+    weights = np.arange(1, window_size + 1)
+    return convolve(data, weights/weights.sum(), mode='valid')
+
+def exponential_moving_average(data, alpha=0.3):
+    return pd.Series(data).ewm(alpha=alpha).mean().values
+
+def gaussian_smoothing(data, window_size):
+    window = gaussian(window_size, window_size/3)
+    return convolve(data, window/window.sum(), mode='valid')
+
+def savitzky_golay(data, window_size, polynomial_order=2):
+    return savgol_filter(data, window_size, polynomial_order)
+
+def median_filter(data, window_size):
+    return medfilt(data, window_size)
+
+class SmoothedData:
+    def __init__(self, data, log_message):
+        self.data = data
+        self.log_message = log_message
+    
+    def get_data(self):
+        return self.data
+    
+    def show_plot(self):
+        plt.show()
+    
+    def __repr__(self):
+        return self.log_message
+
+
+def smooth_data(raw_data, method, **kwargs):
+    # Split the raw data into x and y coordinates
+    x, y = raw_data[:, 0], raw_data[:, 1]
+    
+    # Map method names to functions
+    methods = {
+        "moving_average": moving_average,
+        "weighted_moving_average": weighted_moving_average,
+        "exponential_moving_average": exponential_moving_average,
+        "gaussian_smoothing": gaussian_smoothing,
+        "savitzky_golay": savitzky_golay,
+        "median_filter": median_filter
+    }
+    
+    # Check if the method exists
+    if method not in methods:
+        raise ValueError(f"Method {method} not recognized.")
+    
+    # Apply the selected method to smooth the data
+    smoothed_x = methods[method](x, **kwargs)
+    smoothed_y = methods[method](y, **kwargs)
+    
+    # Combine smoothed x and y into a numpy array
+    smoothed_data = np.column_stack((smoothed_x, smoothed_y))
+    
+    # Plotting the raw and smoothed data
+    time = np.arange(len(x))
+    plt.figure(figsize=(10, 6))
+    plt.plot(time, x, 'r--', label="Raw X")
+    plt.plot(time, y, 'b--', label="Raw Y")
+    plt.plot(time[len(time) - len(smoothed_x):], smoothed_x, 'r-', label="Smoothed X")
+    plt.plot(time[len(time) - len(smoothed
