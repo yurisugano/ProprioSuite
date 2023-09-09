@@ -24,7 +24,7 @@ This project is primarily targeted at healthcare and somatosensory research.
 
 ## Technical Details
 
-- **Programming Language**: R
+- **Programming Language**: Python
 - **Dependencies**: List of packages (to be updated later)
 - **Architecture**: The package consists of two modules - `PointingTask` and `WeightDiscrimination`. Each module contains analyses, figures, comparison tools, and a performance report generator specific to its task.
 
