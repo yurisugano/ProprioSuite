@@ -32,23 +32,26 @@ This project is primarily targeted at healthcare and somatosensory research.
 
 ### Prerequisites
 
-- R
-- Ensure you have the devtools package installed. If not, you can install it using:
+- Python (preferably 3.6 or higher)
+- Ensure you have `pip` and `setuptools` installed. Most Python installations already include them, but if not, you can install them using:
 
-```R
-install.packages("devtools")
+```bash
+pip install pip setuptools --upgrade
 ```
 
 ### Installation
 
-You can install the package with `devtools`:
+You can install the package directly from GitHub using pip:
 
-```R
-library(devtools)
-install_github("yurisugano/ProprioSuite")
-library(ProprioSuite)
+```bash
+pip install git+https://github.com/yurisugano/ProprioSuite.git
 ```
 
+After the installation, you can import the package in your Python code:
+
+```python
+import ProprioSuite
+```
 ### Usage
 
 Install the package and refer to the modules available in the documentation.
