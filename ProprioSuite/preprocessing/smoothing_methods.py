@@ -1,5 +1,6 @@
 from scipy.signal import savgol_filter, medfilt, convolve, gaussian
 import numpy as np
+import pandas as pd
 
 class SmoothingMethod:
     def __init__(self, data):
