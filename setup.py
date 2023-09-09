@@ -11,9 +11,12 @@ setup(
     url='https://github.com/yurisugano/ProprioSuite',
     license='MIT',
     packages=find_packages(exclude=['tests*']),
-    install_requires=[
-        
-    ],
+ install_requires=[
+    'numpy',
+    'matplotlib',
+    'scipy',
+    'pandas'
+],
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
