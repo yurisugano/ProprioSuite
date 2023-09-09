@@ -1,9 +1,10 @@
 from preprocessing import *
+from analysis import *
 
 # Load the data for trial_id "1_1"
 try:
-    db_path = "data/proprio.db"  # Replace with the actual path
-    trial_id = "1_2"
+    db_path = "../data/proprio.db"  # Replace with the actual path
+    trial_id = "1_1"
     temp_data = load_trial_data(trial_id, db_path)
     if temp_data:
         print("Data loaded successfully." )
@@ -16,6 +17,8 @@ except Exception as e:
 smooth_object = smooth_data(temp_data, MovingAverage, window_size=100)
 
 smooth_data = smooth_object.get_data()
+
+smooth_object.show_plot()
 
 results = xy_summaries(smooth_data)
 
