@@ -2,7 +2,7 @@
 
 ## Overview
 
-**ProprioSuite** is an open-source analysis pipeline designed for two proprioceptive testing paradigms: the pointing task and the weight discrimination task. The pointing task measures proprioception, while the weight discrimination task measures whether we can discriminate between different weights. This project aims to provide a standardized pipeline for the intricate data analysis following these tests, especially in scenarios where others may conduct the same tests and require analysis.
+**ProprioSuite** is an open-source package designed for two proprioceptive testing paradigms: the pointing task and the weight discrimination task. The pointing task measures proprioception, while the weight discrimination task measures whether we can discriminate between different weights. This project aims to provide a standardized pipeline for the intricate data analysis following these tests, especially in scenarios where others may conduct the same tests and require analysis.
 
 For instructions on how the tasks are performed, see their documentation:
 
