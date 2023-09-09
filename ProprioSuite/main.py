@@ -18,4 +18,5 @@ smooth_object = smooth_data(temp_data, MovingAverage, window_size=100)
 smooth_data = smooth_object.get_data()
 
 results = xy_summaries(smooth_data)
+
 print(results)
