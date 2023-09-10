@@ -12,6 +12,7 @@ For instructions on how the tasks are performed, see their documentation:
 
 ### Features
 
+- An independent 2D smoothing module with the most commonly used smoothing methods (see [instructions](#usage))
 - Modular statistical analysis for raw data from the tests.
 - Publicly available database for subjects without a known neurological condition.
 - Comparison baseline for others to analyze their data and compare subjects to the normal range.
@@ -52,9 +53,43 @@ After the installation, you can import the package in your Python code:
 ```python
 import ProprioSuite
 ```
+
 ### Usage
 
-Install the package and refer to the modules available in the documentation.
+**ProprioSuite** contains a module with several smoothing methods for 2D data, which can useful in different applications. This module offers various smoothing methods to refine your data, including Moving Average, Weighted Moving Average, Exponential Moving Average, Gaussian Smoothing, Savitzky Golay, and Median Filter.
+
+Clone this repository following the instructions above, make sure to install all dependencies
+
+```bash
+pip install scipy numpy pandas matplotlib
+```
+
+Sample data should a 2D numpy array where:
+
+First column: Time
+Second column: X coordinate
+Third column: Y coordinate
+
+```python
+data = np.array([
+    [0.0, -0.778, -0.475],
+    [0.04, -0.811, -0.449],
+    ...
+])
+
+smoothed_data_object = smooth_data(data, MovingAverage, window_size=100)
+```
+
+You can then retrieve the smoothed data with the method `.get_data()` and see the results of smoothing with `.show_plot()`
+
+```
+smoothed_data = smoothed_data_object.get_data()
+smoothed_data_object.show_plot()
+```
+<p align="center">
+  <img src="data/figures/smoothing_example.png" width="640">
+</p>
+
 
 ## Project Status
 
