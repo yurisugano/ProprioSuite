@@ -67,7 +67,9 @@ pip install scipy numpy pandas matplotlib
 Sample data should a 2D numpy array where:
 
 First column: Time
+
 Second column: X coordinate
+
 Third column: Y coordinate
 
 ```python
